@@ -1,24 +1,45 @@
 <html>
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-    <title>GAN Steerability</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>E4S</title>
+    <link rel="icon" href="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/325/sparkles_2728.png">
 
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <script type="text/javascript" src="jquery.mlens-1.0.min.js"></script>
     <script type="text/javascript" src="jquery.js"></script>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- 数学公式 -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
+        :root {
+            --text: #000;
+            --bg: #fff;
+        }
         body {
             font-family: 'Open-Sans', sans-serif;
             font-weight: 300;
-            background-color: #fff;
+            /* background-color: #fff;
+            color: black; */
+            background-color: var(--bg);
+            color: var(--text);
         }
-
+        
+        @media (prefers-color-scheme: dark) {
+        :root {
+            --text: #fff;
+            --bg: #000;
+            }
+        }
         .content {
             width: 1000px;
             padding: 25px 50px;
             margin: 25px auto;
-            background-color: white;
+            /* background-color: white; */
+            background-color: var(--bg);
             box-shadow: 0px 0px 10px #999;
             border-radius: 15px;
         }
@@ -40,7 +61,8 @@
 
         a,
         a:visited {
-            color: #224b8d;
+            /* color: #224b8d; */
+            color: #2a72f4;
             font-weight: 300;
         }
 
@@ -174,6 +196,7 @@
             height: 125%
         }
     </style>
+    
     <!-- Global site tag (gtag.js) - Google Analytics -->
 		<!--
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-98008272-2"></script>
@@ -194,110 +217,201 @@
 </head>
 
 <body>
-
     <div class="content">
-        <h1>On the "steerability" of generative adversarial networks</h1>
+        <h1>Fine-Grained Face Swapping via Regional GAN Inversion</h1>
 
         <p id="authors">
-            <a href="http://people.csail.mit.edu/jahanian/">Ali Jahanian*</a>
-            <a href="http://people.csail.mit.edu/lrchai/">Lucy Chai*</a>
-            <a href="http://web.mit.edu/phillipi/">Phillip Isola</a><br>
+            Zhian Liu<sup>1*</sup>,
+            Maomao Li<sup>2*</sup>,
+            <a href="https://yzhang2016.github.io/yongnorriszhang.github.io/">Yong Zhang<sup>2*</sup></a>
+            Cairong Wang<sup>3</sup>,
+            <a href="https://qzhang-cv.github.io/">Qi Zhang<sup>2</sup></a>,
+            <a href="https://juewang725.github.io/">Jue Wang<sup>2</sup></a>,
+            <a href="https://nieyongwei.net/">Yongwei Nie<sup>1<i class="fa fa-envelope"></i></sup></a></i><br>
             <!-- <strong>MIT Computer Science and Artificial Intelligence Laboratory</strong> -->
-            MIT Computer Science and Artificial Intelligence Laboratory
-        </p>
-				<font size="+2">
-					<p style="text-align: center;">
-						<a href="https://arxiv.org/abs/1907.07171" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="files/poster.pdf" target="_blank">[Poster]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="https://github.com/ali-design/gan_steerability" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="https://youtu.be/nS0V64sF7Cw" target="_blank">[Video]</a>
-					</p>
-					</font>
-        <p>
-            <img class='teaser-img' src='img/teaser.png'></img>
-        </p>
-				<!--
-        <div class="downloadpaper">
+            <sup>1</sup>School of Computer Science and Engineering, South China University of Technology, China<br>
+            <sup>2</sup>Tencent AI Lab, Shenzhen, China <br>
+            <sup>3</sup>Department of Computer Science and Technology, Tsinghua University<br>
+            *: equal contributions, &nbsp;&nbsp <i class="fa fa-envelope"></i>: corresponding author
             <br>
-            <a href="https://arxiv.org/pdf/1907.07171.pdf"><img src="img/cover.png" width="160px" border="2">
+        </p>
+            <font size="+2">
                 <p style="text-align: center;">
-                    <a href="https://arxiv.org/pdf/1907.07171.pdf" target="_blank">[Paper]</a> 
-                    <a href="https://github.com/ali-design/gan_steerability" target="_blank">[Code]</a>
+                    <a href="#" target="_blank">[ArXiv]</a> &nbsp;&nbsp;&nbsp;&nbsp;
                 </p>
-        </div>
-				-->
+            </font>
+        <p>
+            <img class='teaser-img' src='img/e4s_teaser.png'></img>
+        </p>
+				
+        <!-- <div class="downloadpaper">
+            <br>
+            <a href="#"><img src="img/cover.png" width="160px" border="2">
+                <p style="text-align: center;">
+                    <a href="#" target="_blank">[Paper]</a> 
+                </p>
+        </div> -->
+				
 
-        <p>An open secret in contemporary machine learning is that
-many models work beautifully on standard benchmarks but
-fail to generalize outside the lab. This has been attributed
-to the fact that the models are trained on biased datasets,
-which provide poor coverage over real world events. Generative
-models are no exception, but recent advances in generative
-adversarial networks (GANs) make it look otherwise -- these models can now synthesize strikingly realistic and
-diverse images. Is generative modeling of photos a solved
-problem? We show that although current GANs can fit standard
-datasets very well, they still fall far short of being comprehensive
-models of the visual manifold. In particular, we
-study their ability to fit simple visual transformations such
-as camera movements and color changes. We find that the
-models reflect the biases of the datasets on which they are
-trained (e.g., centered objects), but that they also exhibit
-some capacity for generalization: by "steering" in latent
-space, we can shift the distribution while still creating realistic
-images. We hypothesize that the degree of distributional
-shift is related to the breadth of the training data distribution,
-and conduct experiments that demonstrate this.</p>
-
-
+        <!-- <p>Compared with the existing StyleGAN-based face swapping approaches,
+            our proposed method can achieve high-fidelity results that show better
+            identity keeping from the source while keeping the similar pose and 
+            expression as the target. Note that skin color preservation and proper 
+            occlusion handling are our advantages over others. All the facial images 
+            are at 1024x1024.</p> -->
+        
+        <center><font size="+2">Abstract</font></center>
+        <p>
+            We present a novel paradigm for high-fidelity face swapping that 
+            faithfully preserves the desired subtle geometry and texture details. 
+            We rethink face swapping from the perspective of fine-grained face 
+            editing, i.e., “editing for swap-ping” (E4S), and propose a framework
+            that is based on the explicit disentanglement of the shape and texture 
+            of facial components. Following the E4S principle, our framework enables 
+            both global and local swapping of facial features, as well as controlling 
+            the amount of partial swapping specified by the user. Furthermore, the E4S 
+            paradigm is inherently capable of handling facial occlusions by means of 
+            facial masks. At the core of our system lies a novel Regional GAN Inversion 
+            (RGI) method, which allows the explicit disentanglement of shape and texture. 
+            It also allows face swapping to be performed in the latent space of StyleGAN. 
+            Specifically, we design a multi-scale mask-guided encoder to project the 
+            texture of each facial component into regional style codes. We also design 
+            a mask-guided injection module to manipulate the feature maps with the style 
+            codes. Based on the disentanglement, face swapping is reformulated as a 
+            simplified problem of style and mask swapping. Extensive experiments and 
+            comparisons with current state-of-the-art methods demonstrate the superiority 
+            of our approach in preserving texture and shape details, as well as working 
+            with high resolution images at 1024x1024.
+        </p>
         <br clear="all">
     </div>
-    <div class="content" id="video">
-				<font size="+2">
-					<p style="text-align: center;">
-						Links to: &nbsp;&nbsp;
-						<a href="https://arxiv.org/abs/1907.07171" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="files/poster.pdf" target="_blank">[Poster]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="https://github.com/ali-design/gan_steerability" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="https://youtu.be/nS0V64sF7Cw" target="_blank">[Video]</a>
-					</p>
-					<p style="text-align: center;">
-					<iframe width="970" height="550" src="https://www.youtube.com/embed/nS0V64sF7Cw?start=2" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-					</p>
-					</font>
+    
+    <div class="content" id="swapping_pipeline">
+        <center><font size="+2">Proposed E4S framework</font></center>
+        <br clear="all">
+        <img class='teaser-img' src='img/e4s_pipeline.png'></img>
+        <p>
+            Overview of our proposed E4S pipeline. (a) We first crop the face region 
+            for the source \(S\) and target \(T\) respectively, obtaining \(I_s\) and \(I_t\). 
+            Then, a reenactment network \(G_r\) is used to drive \(I_s\) to show similar pose 
+            and expression towards \(I_t\), obtaining \(I_d\). The segmentation masks 
+            of \(I_t\) and \(I_d\) are also estimated. (b) The driven and target pairs 
+            \((I_d, M_d)\) and \((I_t, M_t)\) are fed into the mask-guided encoder \(F_{\phi}\) 
+            to extract the per-region style codes to depict the texture respectively, 
+            producing texture codes \(S_d\) and \(S_t\). We then swap the masks and the 
+            corresponding texture codes, and send them to the pre-trained StyleGAN 
+            generator \(G_{\theta}\) with a mask-guided injection module to synthesize 
+            the swapped face \(\tilde{I}\). Finally, \(\tilde{I}\) is blended with \(T\) 
+            to output a realistic swapped image.
+        </p>
     </div>
-    <div class="content" id="poster">
-				<font size="+2">
-					<p style="text-align: center;">
-						Links to: &nbsp;&nbsp;
-						<a href="https://arxiv.org/abs/1907.07171" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="files/poster.pdf" target="_blank">[Poster]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="https://github.com/ali-design/gan_steerability" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="https://youtu.be/nS0V64sF7Cw" target="_blank">[Video]</a>
-					</p>
-					<p style="text-align: center;">
-					<a href="files/poster.pdf"><img src="img/poster_image.jpg" width="80%" border="2"></a>
-					</p>
-					</font>
+
+    <div class="content" id="rgi_pipeline">
+        <center><font size="+2">Regional GAN inversion</font></center>
+        <br clear="all">
+        <p>
+            The core of our E4S framework relies on a novel regional GAN inversion approach, 
+            which precisely encodes the per-region texture that is disentangled with its shape.
+        </p>
+        <div >
+            <img class="teaser-img" id="rgi_pipeline" src='img/rgi_pipeline2.png'></img>
+        </div>
     </div>
-    <div class="content" id="MIT_News">
-				<font size="+2">
-					<p style="text-align: center;">
-						Links to: &nbsp;&nbsp;
-						<a href="https://arxiv.org/abs/1907.07171" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="files/poster.pdf" target="_blank">[Poster]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="https://github.com/ali-design/gan_steerability" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-						<a href="https://youtu.be/nS0V64sF7Cw" target="_blank">[Video]</a>
-					</p>
-					<p style="text-align: center;">
-					<a href="http://news.mit.edu/2020/visualizing-the-world-beyond-the-frame-0506"><img src="img/gan_steerability_MIT_news_thumbnail.png" width="80%" border="2"></a>
-					</p>
-					</font>
+    
+    <!-- youtube 视频 -->
+    <!-- <div class="content" id="video">
+        <font size="+2">
+            <p style="text-align: center;">
+                Links to: &nbsp;&nbsp;
+                <a href="https://arxiv.org/abs/1907.07171" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="files/poster.pdf" target="_blank">[Poster]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://github.com/ali-design/gan_steerability" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://youtu.be/nS0V64sF7Cw" target="_blank">[Video]</a>
+            </p>
+            <p style="text-align: center;">
+            <iframe width="970" height="550" src="https://www.youtube.com/embed/nS0V64sF7Cw?start=2" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </p>
+        </font>
+    </div> -->
+    
+    <!-- <div class="content" id="poster">
+        <font size="+2">
+            <p style="text-align: center;">
+                Links to: &nbsp;&nbsp;
+                <a href="https://arxiv.org/abs/1907.07171" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="files/poster.pdf" target="_blank">[Poster]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://github.com/ali-design/gan_steerability" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://youtu.be/nS0V64sF7Cw" target="_blank">[Video]</a>
+            </p>
+            <p style="text-align: center;">
+            <a href="files/poster.pdf"><img src="img/poster_image.jpg" width="80%" border="2"></a>
+            </p>
+        </font>
+    </div> -->
+    <!-- <div class="content" id="MIT_News">
+        <font size="+2">
+            <p style="text-align: center;">
+                Links to: &nbsp;&nbsp;
+                <a href="https://arxiv.org/abs/1907.07171" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="files/poster.pdf" target="_blank">[Poster]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://github.com/ali-design/gan_steerability" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://youtu.be/nS0V64sF7Cw" target="_blank">[Video]</a>
+            </p>
+            <p style="text-align: center;">
+            <a href="http://news.mit.edu/2020/visualizing-the-world-beyond-the-frame-0506"><img src="img/gan_steerability_MIT_news_thumbnail.png" width="80%" border="2"></a>
+            </p>
+        </font>
+    </div> -->
+    <div class="content">
+        <center><font size="+2">Results and Applications</font></center>
+        
+        <h3>1. Face swapping</h3>
+        <img class="teaser-img" src='img/face_swapping.png'></img>
+        
+        <h3>2. Face editting</h3>
+        <img class="teaser-img" src='img/face_editting.png'></img>
+        
+        <h3>3. Hairstyle transferring</h3>
+        <img class="teaser-img" src='img/hair_transferring.png'></img>
+
+        <h3>4. Face beautification</h3>
+        <img class="teaser-img" src='img/face_beautification.png'></img>
+
+        <h3>5. Controllable face swapping</h3>
+        <img class="teaser-img" src='img/controllable_swapping.png'></img>
+        
+        <h3>6. Video face swapping</h3>
+        <p style="text-align: center;">
+            <video width="90%" controls autoplay="autoplay">
+                <source src="videos/videoSwap_demo1.mp4" type="video/mp4">
+                <object data="videos/videoSwap_demo1.mp4" width="90%" >
+                  <embed src="videos/videoSwap_demo1.mp4" width="90%" >
+                </object>
+            </video>
+        </p>
+        <p style="text-align: center;">
+            <video width="90%" controls autoplay="autoplay">
+                <source src="videos/videoSwap_demo3.mp4" type="video/mp4">
+                <object data="videos/videoSwap_demo3.mp4" width="90%" >
+                  <embed src="videos/videoSwap_demo3.mp4" width="90%" >
+                </object>
+            </video>
+        </p>
+        <p style="text-align: center;">
+            <video width="90%" controls autoplay="autoplay">
+                <source src="videos/videoSwap_demo2.mp4" type="video/mp4">
+                <object data="videos/videoSwap_demo2.mp4" width="90%" >
+                  <embed src="videos/videoSwap_demo2.mp4" width="90%" >
+                </object>
+            </video>
+        </p>
     </div>
+
     <div class="content" id="references">
 
         <h2>Reference</h2>
 
-        <p>A. Jahanian*, L. Chai*, and P. Isola. On the "steerability" of generative adversarial networks. 2020.</p>
+        <p>Z. Liu, M. Li, Y. Zhang, C. Wang, Q. Zhang, J. Wang and Y. Nie, Fine-Grained Face Swapping via Regional GAN Inversion, 2022.</p>
 
         <code>
 	<!--
@@ -308,19 +422,21 @@ and conduct experiments that demonstrate this.</p>
             &nbsp;&nbsp;year={2019}<br>
             }
 	-->
-	    @inproceedings{gansteerability,<br>
+	    <!-- @inproceedings{gansteerability,<br>
             &nbsp;&nbsp;title={On the "steerability" of generative adversarial networks},<br>
             &nbsp;&nbsp;author={Jahanian, Ali and Chai, Lucy and Isola, Phillip},<br>
             &nbsp;&nbsp;booktitle={International Conference on Learning Representations},<br>
             &nbsp;&nbsp;year={2020}<br>
-            }
+            } -->
         </code>
 
     </div>      
     <div class="content" id="acknowledgements">
           <p><strong>Acknowledgements</strong>: <br>
-              This work was supported by a Google Faculty Research Award to P.I., and a U.S. National Science Foundation Graduate Research Fellowship to L.C. 
-              Website template is borrowed from our <a href="http://ganalyze.csail.mit.edu/">memorable friends</a>.
+             This work was done when Zhian was an intern at Tencent AI Lab.
+             Website template is borrowed from <a href="http://ganalyze.csail.mit.edu/">GANalyze</a>.
+              <!-- This work was supported by a Google Faculty Research Award to P.I., and a U.S. National Science Foundation Graduate Research Fellowship to L.C. 
+              Website template is borrowed from our <a href="http://ganalyze.csail.mit.edu/">memorable friends</a>. -->
               <!--
               <p><strong>Disclaimer</strong>: The views and conclusions contained herein are those of the authors and
                   should not be interpreted as necessarily representing the official policies or endorsements, either
